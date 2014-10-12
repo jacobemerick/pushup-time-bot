@@ -1,0 +1,20 @@
+{
+    "name": "jacobemerick/pushup-time-bot",
+    "description": "Experimental twitter bot for real-time interactions and pushups.",
+    "keywords": ["twitter", "twitter bot", "streaming", "pushups"],
+    "authors": [
+        {
+            "name": "Jacob Emerick"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "guzzlehttp/guzzle": "~4.0"
+    },
+    "autoload": {
+        "psr-4" : {
+            "Jacobemerick\\PushupTime\\": "src/"
+        }
+    }
+}
+
