@@ -2,6 +2,14 @@
 
 require_once 'vendor/autoload.php';
 
+use Aura\Sql\ExtendedPdo;
+
+$pdo = new ExtendedPdo(
+    'connect-string',
+    'username',
+    'password'
+);
+
 use GuzzleHttp\Client,
     GuzzleHttp\Subscriber\Oauth\Oauth1;
 
