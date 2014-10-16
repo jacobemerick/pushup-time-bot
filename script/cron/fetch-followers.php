@@ -1,66 +1,88 @@
 <?php
 
+/**
+ * cron that will fetch current followers of the bot and do some stuff
+ * new followers will get inserted into the program
+ * also, new followers will be followed by the bot
+ * followers who left will be de-activated from the program
+ * followers who have returned after a previous lapse will be re-activated
+ */
+
 require_once __DIR__ . '/../../bootstrap.php';
 
-$result = $rest_client->get('followers/ids.json');
+// fetch followers of the registered bot
+// todo handle paginated responses (twitter only responds in groups of 5,000)
+try {
+    $result = $rest_client->get('followers/ids.json');
+} catch (Exception $e) {
+    exit("ABORT - fetch followers request failed with message: {$e->getMessage()}.");
+}
 if ($result->getStatusCode() != 200) {
     exit("ABORT - fetch followers request failed with code: {$result->getStatusCode()}.");
 }
+$twitter_followers = $result->json()['ids'];
 
-$response = $result->json();
-if (count($response['ids']) < 1) {
-    exit("ABORT - no followers were found to process.");
-}
-$twitter_followers = $response['ids'];
-
-// todo handle paginated responses (twitter only responds in groups of 5,000)
-
+// fetch local followers to determine who are new followers
 $query = '
     SELECT
         twitter_id
     FROM
         follower';
-$registered_followers = $pdo->fetchCol($query);
-
+try {
+    $registered_followers = $pdo->fetchCol($query);
+} catch (PDOException $e) {
+    exit("ABORT - fetch registered followers failed with error: {$e->getMessage()}.");
+}
 $new_followers = array_diff($twitter_followers, $registered_followers);
 
+// if there are new followers, than we need to loop through them and do some stuff
 if (count($new_followers) > 0) {
-
+    // first we want to fetch more information for each follower
     // todo handle pagination (twitter can only accept 100 ids per request)
-    $result = $rest_client->post('users/lookup.json', [
-        'body' => [
-            'user_id' => implode(',', $new_followers),
-        ]
-    ]);
+    try {
+        $result = $rest_client->post('users/lookup.json', [
+            'body' => [
+                'user_id' => implode(',', $new_followers),
+            ],
+        ]);
+    } catch (Exception $e) {
+        exit("ABORT - user lookup request failed with message: {$e->getMessage()}.");
+    }
     if ($result->getStatusCode() != 200) {
         exit("ABORT - user lookup request failed with code: {$result->getStatusCode()}.");
     }
 
+    // quick sanity check to make sure that we got back the proper number of follower objects
     $response = $result->json();
     if (count($response) != count($new_followers)) {
         exit("ABORT - the number of returned followers does not equal the number requested.");
     }
 
+    // now we need to do individual actions on each follower
     foreach ($response as $follower) {
-        $result = $rest_client->post('friendships/create.json', [
-            'body' => [
-                'user_id'  => $follower['id'],
-                'follow'   => true,
-            ],
-        ]);
-
+        // we want to try to follow them back
+        try {
+            $result = $rest_client->post('friendships/create.json', [
+                'body' => [
+                    'user_id'  => $follower['id'],
+                    'follow'   => true,
+                ],
+            ]);
+        } catch (Exception $e) {
+            exit("ABORT - tried to follow a user and got failure message: {$e->getMessage()}.");
+        }
         if ($result->getStatusCode() != 200) {
             exit("ABORT - tried to follow a user and got failure code: {$result->getStatusCode()}.");
         }
 
+        // then we will insert them into the program
         $query = '
             INSERT INTO
                 `follower`
                 (`twitter_id`, `screen_name`, `description`, `profile_image`, `location`, `time_zone`, `is_protected`, `follower_count`, `friend_count`, `status_count`, `account_create_date`, `is_following`, `create_date`)
             VALUES
                 (:twitter_id, :screen_name, :description, :profile_image, :location, :time_zone, :is_protected, :follower_count, :friend_count, :status_count, :account_create_date, :is_following, NOW())';
-
-        $params = [
+        $parameters = [
             'twitter_id'           => $follower['id'],
             'screen_name'          => $follower['screen_name'],
             'description'          => $follower['description'],
@@ -74,41 +96,87 @@ if (count($new_followers) > 0) {
             'account_create_date'  => date('Y-m-d H:i:s', strtotime($follower['created_at'])),
             'is_following'         => 1,
         ];
-
-        $statement = $pdo->prepare($query);
         try {
-            $statement->execute($params);
+            $pdo->perform($query, $parameters);
         } catch (PDOException $e) {
-            exit("ABORT - was unable to insert the new follower into the table, error: {$e->getMessage()}");
+            exit("ABORT - was unable to insert the new follower into the table, error: {$e->getMessage()}.");
         }
-
     }
-
 }
-    
-$removed_followers = array_diff($registered_followers, $twitter_followers);
 
-if (count($removed_followers) > 0) {
-    foreach ($removed_followers as $removed_follower) {
-        $query = '
-            UPDATE
-                `follower`
-            SET
-                `is_following` = :not_following
-            WHERE
-                `twitter_id` = :twitter_id';
+// fetch any followers who are de-activated in our system but are now followers
+$query = '
+    SELECT
+        twitter_id
+    FROM
+        follower
+    WHERE
+        is_following = :is_not_following';
+$parameters = [
+    'is_not_following' => 0,
+];
+try {
+    $deactivated_followers = $pdo->fetchCol($query, $parameters);
+} catch (PDOException $e) {
+    exit("ABORT - fetch deactivated followers failed with error: {$e->getMessage()}.");
+}
+$returning_followers = array_intersect($twitter_followers, $deactivated_followers);
 
-        $params = [
-            'not_following'  => 0,
-            'twitter_id'     => $removed_follower,
-        ];
+// if there are followers who have returned, we want to re-activate their status
+if (count($returning_followers) > 0) {
+    $query = '
+        UPDATE
+            follower
+        SET
+            is_following = :is_following
+        WHERE
+            twitter_id IN (:returned_follower_ids)';
+    $parameters = [
+        'is_following'           => 1,
+        'returned_follower_ids'  => $returning_followers,
+    ];
+    try {
+        $pdo->perform($query, $parameters);
+    } catch (PDOException $e) {
+        exit("ABORT - attempt to re-activate followers failed with error: {$e->getMessage()}");
+    }
+}
 
-        $statement = $pdo->prepare($query);
-        try {
-            $statement->execute($params);
-        } catch (PDOException $e) {
-            exit("ABORT - was unable to update status of non follower, error: {$e->getMessage()}");
-        }
+// fetch any followers who are active in our system but are no longer followers
+$query = '
+    SELECT
+        twitter_id
+    FROM
+        follower
+    WHERE
+        is_following = :is_following';
+$parameters = [
+    'is_following' => 1,
+];
+try {
+    $active_followers = $pdo->fetchCol($query, $parameters);
+} catch (PDOException $e) {
+    exit("ABORT - fetch activate followers failed with error: {$e->getMessage()}.");
+}
+$deactivated_followers = array_diff($active_followers, $twitter_followers);
+
+// if there are freshly deactivated followers, we want to disable them in our program
+if (count($deactivated_followers) > 0) {
+    $query = '
+        UPDATE
+            follower
+        SET
+            is_following = :is_not_following
+        WHERE
+            twitter_id IN (:deactivated_follower_ids)';
+    $parameters = [
+        'is_not_following'          => 0,
+        'deactivated_follower_ids'  => $deactivated_followers,
+    ];
+    try {
+        $pdo->perform($query, $parameters);
+    } catch (PDOException $e) {
+        exit("ABORT - attempt to deactivate followers failed with error: {$e->getMessage()}");
     }
 }
 
