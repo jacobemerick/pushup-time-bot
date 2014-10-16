@@ -55,20 +55,24 @@ if (count($new_followers) > 0) {
 
         $query = '
             INSERT INTO
-                `follower` (`twitter_id`, `screen_name`, `description`, `is_protected`, `follower_count`, `friend_count`, `status_count`, `account_create_date`, `is_following`, `create_date`)
+                `follower`
+                (`twitter_id`, `screen_name`, `description`, `profile_image`, `location`, `time_zone`, `is_protected`, `follower_count`, `friend_count`, `status_count`, `account_create_date`, `is_following`, `create_date`)
             VALUES
-                (:twitter_id, :screen_name, :description, :protected_account, :follower_count, :friend_count, :status_count, :account_create_date, :follower, NOW())';
+                (:twitter_id, :screen_name, :description, :profile_image, :location, :time_zone, :is_protected, :follower_count, :friend_count, :status_count, :account_create_date, :is_following, NOW())';
 
         $params = [
             'twitter_id'           => $follower['id'],
             'screen_name'          => $follower['screen_name'],
             'description'          => $follower['description'],
-            'protected_account'    => $follower['protected'] ? 1 : 0,
+            'profile_image'        => $follower['profile_image_url'],
+            'location'             => $follower['location'],
+            'time_zone'            => $follower['time_zone'],
+            'is_protected'         => $follower['protected'] ? 1 : 0,
             'follower_count'       => $follower['followers_count'],
             'friend_count'         => $follower['friends_count'],
             'status_count'         => $follower['statuses_count'],
-            'account_create_date'  => date('Y-M-D H:i:s', strtotime($follower['created_at'])),
-            'follower'             => 1,
+            'account_create_date'  => date('Y-m-d H:i:s', strtotime($follower['created_at'])),
+            'is_following'         => 1,
         ];
 
         $statement = $pdo->prepare($query);
