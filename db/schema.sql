@@ -41,3 +41,36 @@ CREATE TABLE `follower` (
 
 SHOW WARNINGS;
 
+
+# Preferences for each participating follower
+# ------------------------------------------------------------
+DROP TABLE IF EXISTS `reminder_preference`;
+
+CREATE TABLE `reminder_preference` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `twitter_id` bigint(20) unsigned NOT NULL,
+  `weekday` varchar(20) NOT NULL DEFAULT '',
+  `hour` varchar(40) NOT NULL DEFAULT '',
+  `per_day` tinyint(1) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `twitter_id_index` (`twitter_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SHOW WARNINGS;
+
+
+# List of sent reminders per follower
+# ------------------------------------------------------------
+DROP TABLE IF EXISTS `reminder`;
+
+CREATE TABLE `reminder` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `twitter_id` bigint(20) unsigned NOT NULL,
+  `message` tinyint(1) unsigned NOT NULL,
+  `create_date` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `twitter_id_index` (`twitter_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SHOW WARNINGS;
+

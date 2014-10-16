@@ -101,6 +101,26 @@ if (count($new_followers) > 0) {
         } catch (PDOException $e) {
             exit("ABORT - was unable to insert the new follower into the table, error: {$e->getMessage()}.");
         }
+
+        // default settings for preferences
+        // todo this should be editable by another endpoint
+        $query = '
+            INSERT INTO
+                `reminder_preference`
+                (`twitter_id`, `weekday`, `hour`, `per_day`, `create_date`)
+            VALUES
+                (:twitter_id, :weekday, :hour, :per_day, NOW())';
+        $parameters = [
+            'twitter_id'  => $follower['id'],
+            'weekday'     => '0,1,2,3,4,5,6',
+            'hour'        => '7,8,9,10,11,12,13,14,15,16,17,18,19,20',
+            'per_day'     => 3,
+        ];
+        try {
+            $pdo->perform($query, $parameters);
+        } catch (PDOException $e) {
+            exit("ABORT - was unable to insert default reminder preferences into table, error: {$e->getMessage()}.");
+        }
     }
 }
 
