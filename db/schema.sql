@@ -48,12 +48,14 @@ DROP TABLE IF EXISTS `reminder_preference`;
 
 CREATE TABLE `reminder_preference` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `twitter_id` bigint(20) unsigned NOT NULL,
+  `follower_id` int(20) unsigned NOT NULL,
   `weekday` varchar(20) NOT NULL DEFAULT '',
   `hour` varchar(40) NOT NULL DEFAULT '',
   `per_day` tinyint(1) unsigned NOT NULL,
+  `create_date` datetime NOT NULL,
+  `update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `twitter_id_index` (`twitter_id`)
+  UNIQUE KEY `follower_id_index` (`follower_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 SHOW WARNINGS;
@@ -65,11 +67,12 @@ DROP TABLE IF EXISTS `reminder`;
 
 CREATE TABLE `reminder` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `twitter_id` bigint(20) unsigned NOT NULL,
+  `follower_id` int(11) unsigned NOT NULL,
+  `preference_id` int(11) unsigned NOT NULL,
   `message` tinyint(1) unsigned NOT NULL,
   `create_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `twitter_id_index` (`twitter_id`)
+  KEY `follower_id_index` (`follower_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 SHOW WARNINGS;
