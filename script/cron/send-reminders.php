@@ -59,11 +59,11 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
             reminder
         WHERE
             reminder.follower_id = :follower AND
-            reminder.create_date BETWEEN(:start_date, :end_date)';
+            reminder.create_date BETWEEN :start_date AND :end_date';
     $parameters = [
         'follower'    => $follower->id,
-        'start_date'  => mktime(0, 0, 0),
-        'end_date'    => mktime(23, 59, 59),
+        'start_date'  => date('Y-m-d H:i:s', mktime(0, 0, 0)),
+        'end_date'    => date('Y-m-d H:i:s', mktime(23, 59, 59)),
     ];
     try {
         $count = $pdo->fetchValue($query, $parameters);
@@ -73,7 +73,56 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
     if ($count >= $follower->per_day) {
         continue;
     }
-    
-    // send reminder if applicable (twitter call + db insert)
+
+    // test to see if a notification has been sent during this 'chunk'
+    $start_time = mktime(reset($allowed_hours), 0, 0);
+    $end_time = mktime(end($allowed_hours), 59, 59);
+    $chunked_timespan = ($end_time - $start_time) / $follower->per_day;
+    $weight = (time() - $start_time) / $chunked_timespan;
+    $expected_notifications = ceil($weight);
+    if ($count >= $expected_notifications) {
+        continue;
+    }
+
+    // determine if a notification should be sent out
+    $random_number = rand(0, 1000);
+    $random_comparison = ($weight - $count) * 1000;
+    $random_comparison = round($random_comparison);
+    if ($random_number > $random_comparison) {
+        continue;
+    }
+
+    // send reminder to do pushups
+    $tweet = "@{$follower->screen_name} time for pushups!";
+    try {
+        $result = $rest_client->post('statuses/update.json', [
+            'body' => [
+                'status' => $tweet,
+            ],
+        ]);
+    } catch (Exception $e) {
+        exit("ABORT - tried to tell {$follower->screen_name} to do pushups and got failure: {$e->getMessage()}.");
+    }
+    if ($result->getStatusCode() != 200) {
+        exit("ABORT - tried to tell {$follower->screen_name} to do pushups and got failure code: {$result->getStatusCode()}.");
+    }
+
+    // then we insert into the record for our records
+    $query = '
+        INSERT INTO
+            `reminder`
+            (`follower_id`, `preference_id`, `message`, `create_date`)
+        VALUES
+            (:follower, :preference, :message, NOW())';
+    $parameters = [
+        'follower'    => $follower->id,
+        'preference'  => $follower->preference_id,
+        'message'     => $tweet,
+    ];
+    try {
+        $pdo->perform($query, $parameters);
+    } catch (PDOException $e) {
+        exit("ABORT - was unable to insert the reminder record into table, error: {$e->getMessage()}.");
+    }
 }
 
