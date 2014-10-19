@@ -37,10 +37,43 @@ try {
 
 // loop through result set and check to see if they are applicable for a reminder
 while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
-    // test to see if the day is valid
-    // test to see if the hour is valid
-    // test to see how many reminders have been sent today (db call)
-    // do random logic to determine if they should be sent a reminder (weighted accordingly)
+    // test to make sure that the day makes sense
+    $current_day = date('w');
+    $allowed_days = explode(',', $follower->weekday);
+    if (!in_array($current_day, $allowed_days)) {
+        continue;
+    }
+
+    // test to make sure that the hour is valid
+    $current_hour = date('H');
+    $allowed_hours = explode(',', $follower->hour);
+    if (!in_array($current_hour, $allowed_hours)) {
+        continue;
+    }
+
+    // sanity check to make sure we haven't already exceeded number of reminders per day
+    $query = '
+        SELECT
+            COUNT(1) AS count
+        FROM
+            reminder
+        WHERE
+            reminder.follower_id = :follower AND
+            reminder.create_date BETWEEN(:start_date, :end_date)';
+    $parameters = [
+        'follower'    => $follower->id,
+        'start_date'  => mktime(0, 0, 0),
+        'end_date'    => mktime(23, 59, 59),
+    ];
+    try {
+        $count = $pdo->fetchValue($query, $parameters);
+    } catch (PDOException $e) {
+        exit("ABORT - fetch count for follower {$follower->id} failed with message: {$e->getMessage()}.");
+    }
+    if ($count >= $follower->per_day) {
+        continue;
+    }
+    
     // send reminder if applicable (twitter call + db insert)
 }
 
