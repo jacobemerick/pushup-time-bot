@@ -48,7 +48,7 @@ DROP TABLE IF EXISTS `reminder_preference`;
 
 CREATE TABLE `reminder_preference` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `follower_id` int(20) unsigned NOT NULL,
+  `follower_id` int(11) unsigned NOT NULL,
   `weekday` varchar(20) NOT NULL DEFAULT '',
   `hour` varchar(40) NOT NULL DEFAULT '',
   `per_day` tinyint(1) unsigned NOT NULL,
@@ -73,6 +73,41 @@ CREATE TABLE `reminder` (
   `create_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `follower_id_index` (`follower_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SHOW WARNINGS;
+
+# Logging table for all bot mentions
+# ------------------------------------------------------------
+DROP TABLE IF EXISTS `mention`;
+
+CREATE TABLE `mention` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `tweet_id` bigint(20) unsigned NOT NULL,
+  `text` VARCHAR(160) NOT NULL DEFAULT '',
+  `follower_id` int(11) unsigned NOT NULL,
+  `create_date` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `follower_id_index` (`follower_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SHOW WARNINGS;
+
+# Tracking table for follower performance
+# ------------------------------------------------------------
+DROP TABLE IF EXISTS `performance`;
+
+CREATE TABLE `performance` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `follower_id` int(11) unsigned NOT NULL,
+  `reminder_id` int(11) unsigned NOT NULL,
+  `mention_id` int(11) unsigned NOT NULL,
+  `amount` tinyint(1) unsigned NOT NULL,
+  `create_date` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `follower_id_index` (`follower_id`),
+  KEY `reminder_id_index` (`reminder_id`),
+  KEY `mention_id_index` (`mention_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 SHOW WARNINGS;
