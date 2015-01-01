@@ -93,7 +93,8 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
     }
 
     // send reminder to do pushups
-    $tweet = "@{$follower->screen_name} time for pushups!";
+    $time = date('g:i a');
+    $tweet = "@{$follower->screen_name} it's {$time}... Time for pushups!";
     try {
         $result = $rest_client->post('statuses/update.json', [
             'body' => [
