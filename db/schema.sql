@@ -69,7 +69,7 @@ CREATE TABLE `reminder` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `follower_id` int(11) unsigned NOT NULL,
   `preference_id` int(11) unsigned NOT NULL,
-  `message` tinyint(1) unsigned NOT NULL,
+  `tweet_id` bigint(20) unsigned NOT NULL,
   `create_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `follower_id_index` (`follower_id`)

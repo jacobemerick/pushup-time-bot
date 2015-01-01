@@ -111,13 +111,13 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
     $query = '
         INSERT INTO
             `reminder`
-            (`follower_id`, `preference_id`, `message`, `create_date`)
+            (`follower_id`, `preference_id`, `tweet_id`, `create_date`)
         VALUES
-            (:follower, :preference, :message, NOW())';
+            (:follower, :preference, :tweet, NOW())';
     $parameters = [
         'follower'    => $follower->id,
         'preference'  => $follower->preference_id,
-        'message'     => $tweet,
+        'tweet'       => $result->json()['id_str'],
     ];
     try {
         $pdo->perform($query, $parameters);
