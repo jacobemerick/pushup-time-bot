@@ -48,7 +48,8 @@ while (!$stream->eof()) {
             if ($mention_exists != 1) {
                 $query = '
                     SELECT
-                        `id`
+                        `id`,
+                        `screen_name`
                     FROM
                         `follower`
                     WHERE
@@ -57,12 +58,12 @@ while (!$stream->eof()) {
                     'twitter_id'  => $message['user']['id'],
                 ];
                 try {
-                    $follower_id = $pdo->fetchCol($query, $parameters);
+                    $follower = $pdo->fetchOne($query, $parameters);
                 } catch (PDOException $e) {
                     exit("ABORT - follower lookup failed with error: {$e->getMessage()}.");
                 }
 
-                if (empty($follower_id)) {
+                if (empty($follower)) {
                     echo "SKIP - unknown follower tried to contact us with message {$message['text']}.";
                     continue;
                 }
@@ -76,13 +77,85 @@ while (!$stream->eof()) {
                 $parameters = [
                     'tweet_id'     => $message['id_str'],
                     'text'         => $message['text'],
-                    'follower_id'  => $follower_id,
+                    'follower_id'  => $follower['id'],
                     'create_date'  => date('Y-m-d H:i:s'),
                 ];
                 try {
                     $pdo->perform($query, $parameters);
+                    $mention = $pdo->lastInsertId();
                 } catch (PDOException $e) {
                     exit("ABORT - was unable to insert mention into table, error {$e->getMessage()}.");
+                }
+
+                if (preg_match('/^@' . $bot_name . '\s+(\d+)\s*[\.!]?$/i', $message['text'], $match) === 1) {
+                    if (!empty($message['in_reply_to_status_id'])) {
+                        $query = '
+                            SELECT
+                                `id`
+                            FROM
+                                `reminder`
+                            WHERE
+                                `tweet_id` = :tweet_id
+                            LIMIT 1';
+                        $parameters = [
+                            'tweet_id' => $message['in_reply_to_status_id'],
+                        ];
+                        try {
+                            $reminder = $pdo->fetchValue($query, $parameters);
+                        } catch (PDOException $e) {
+                            exit("Abort - fetch reminder for reply {$message['in_reply_to_status_id']} failed with message {$e->getMessage()}.");
+                        }
+                    }
+                    if (empty($reminder)) {
+                        $reminder = 0;
+                    }
+
+                    $query = '
+                        INSERT INTO
+                            `performance`
+                            (`follower_id`, `reminder_id`, `mention_id`, `amount`, `create_date`)
+                        VALUES
+                            (:follower_id, :reminder_id, :mention_id, :amount, :create_date)';
+                    $parameters = [
+                        'follower_id'  => $follower['id'],
+                        'reminder_id'  => $reminder,
+                        'mention_id'   => $mention,
+                        'amount'       => $match[1],
+                        'create_date'  => date('Y-m-d H:i:s'),
+                    ];
+                    try {
+                        $pdo->perform($query, $parameters);
+                    } catch (PDOException $e) {
+                        exit("ABORT - was unable to insert performance into table, error {$e->getMessage()}.");
+                    }
+
+                    $tweet = "@{$follower['screen_name']} thanks - we recorded {$match[1]} pushups for you.";
+                    try {
+                        $result = $rest_client->post('statuses/update.json', [
+                            'body' => [
+                                'status' => $tweet,
+                            ],
+                        ]);
+                    } catch (Exception $e) {
+                        exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some pushups and got failure {$e->getMessage()}.");
+                    }
+                    if ($result->getStatusCode() != 200) {
+                        exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some pushups and got failure code {$result->getStatusCode()}.");
+                    }
+                } else {
+                    $tweet = "@{$follower['screen_name']} sorry, I couldn't understand what you said.";
+                    try {
+                        $result = $rest_client->post('statuses/update.json', [
+                            'body' => [
+                                'status' => $tweet,
+                            ],
+                        ]);
+                    } catch (Exception $e) {
+                        exit("ABORT - tried to tell {$follower['screen_name']} that we didn't understand their message and got failure {$e->getMessage()}.");
+                    }
+                    if ($result->getStatusCode() != 200) {
+                        exit("ABORT - tried to tell {$follower['screen_name']} that we didn't understand their message and got failure code {$result->getStatusCode()}.");
+                    }
                 }
             }
         }
