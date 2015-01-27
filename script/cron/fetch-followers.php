@@ -88,7 +88,7 @@ if (count($new_followers) > 0) {
             'description'          => $follower['description'],
             'profile_image'        => $follower['profile_image_url'],
             'location'             => $follower['location'],
-            'time_zone'            => $follower['time_zone'],
+            'time_zone'            => (string) $follower['time_zone'],
             'is_protected'         => $follower['protected'] ? 1 : 0,
             'follower_count'       => $follower['followers_count'],
             'friend_count'         => $follower['friends_count'],
