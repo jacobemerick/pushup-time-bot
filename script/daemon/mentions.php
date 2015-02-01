@@ -158,8 +158,7 @@ while (!$stream->eof()) {
                     }
                 }
             }
-            $connection = $pdo->getPdo();
-            $connection = null;
+            $connection->close();
         }
     }
 }

@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3ed7d1ec1c734ef774dd9ed963331ca0",
+    "hash": "af5e1a388389388f3b4c8eabf9a2864e",
     "packages": [
         {
             "name": "aura/sql",
-            "version": "2.1.0",
+            "version": "dev-add-connection-close-method",
             "source": {
                 "type": "git",
-                "url": "https://github.com/auraphp/Aura.Sql.git",
-                "reference": "b6cf73defca732c03d429942cf2b6c491511a360"
+                "url": "https://github.com/jacobemerick/Aura.Sql.git",
+                "reference": "be935ce0bddd9fe40bb75a06930521a549c6c106"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/auraphp/Aura.Sql/zipball/b6cf73defca732c03d429942cf2b6c491511a360",
-                "reference": "b6cf73defca732c03d429942cf2b6c491511a360",
+                "url": "https://api.github.com/repos/jacobemerick/Aura.Sql/zipball/be935ce0bddd9fe40bb75a06930521a549c6c106",
+                "reference": "be935ce0bddd9fe40bb75a06930521a549c6c106",
                 "shasum": ""
             },
             "require": {
@@ -34,7 +34,6 @@
                     "Aura\\Sql\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-2-Clause"
             ],
@@ -57,7 +56,10 @@
                 "sqlserver",
                 "sqlsrv"
             ],
-            "time": "2014-08-24 19:47:39"
+            "support": {
+                "source": "https://github.com/jacobemerick/Aura.Sql/tree/add-connection-close-method"
+            },
+            "time": "2015-02-01 19:26:14"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -232,8 +234,11 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "aura/sql": 20
+    },
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": {
         "php": ">=5.4"
     },
