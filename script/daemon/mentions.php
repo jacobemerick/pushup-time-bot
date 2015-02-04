@@ -129,7 +129,7 @@ while (!$stream->eof()) {
                         exit("ABORT - was unable to insert performance into table, error {$e->getMessage()}.");
                     }
 
-                    $tweet = "@{$follower['screen_name']} thanks - we recorded {$match[1]} pushups for you.";
+                    $tweet = sprintf($messages['confirmation'], $follower['screen_name'], $match[1]);
                     try {
                         $result = $rest_client->post('statuses/update.json', [
                             'body' => [
@@ -143,7 +143,7 @@ while (!$stream->eof()) {
                         exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some pushups and got failure code {$result->getStatusCode()}.");
                     }
                 } else {
-                    $tweet = "@{$follower['screen_name']} sorry, I couldn't understand what you said.";
+                    $tweet = sprintf($messages['error'], $follower['screen_name']);
                     try {
                         $result = $rest_client->post('statuses/update.json', [
                             'body' => [

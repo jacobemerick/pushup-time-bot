@@ -1,4 +1,5 @@
 config.json
+messages.json
 composer.phar
 vendor/
 

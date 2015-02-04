@@ -14,6 +14,17 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     exit('Could not read configuration.');
 }
 
+$handle = @fopen('messages.json', 'r');
+if ($handle == false) {
+    exit('No messages file found.');
+}
+$messages = fread($handle, filesize('messages.json'));
+fclose($handle);
+$messages = @json_decode($messages, true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    exit('Could not read messages.');
+}
+
 date_default_timezone_set($config['timezone']);
 $bot_name = $config['bot_name'];
 

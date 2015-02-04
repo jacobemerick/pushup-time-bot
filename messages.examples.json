@@ -1,0 +1,5 @@
+{
+    "reminder": "@%s it's %s... Time for pushups!",
+    "confirmation": "@%s thanks - we recorded %s pushups for you.",
+    "error": "@%s sorry, we couldn't understand what you said."
+}
