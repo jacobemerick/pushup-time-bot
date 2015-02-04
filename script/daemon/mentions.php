@@ -137,10 +137,10 @@ while (!$stream->eof()) {
                             ],
                         ]);
                     } catch (Exception $e) {
-                        exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some pushups and got failure {$e->getMessage()}.");
+                        exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some activity and got failure {$e->getMessage()}.");
                     }
                     if ($result->getStatusCode() != 200) {
-                        exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some pushups and got failure code {$result->getStatusCode()}.");
+                        exit("ABORT - tried to tell {$follower['screen_name']} that we recorded some activity and got failure code {$result->getStatusCode()}.");
                     }
                 } else {
                     $tweet = sprintf($messages['error'], $follower['screen_name']);

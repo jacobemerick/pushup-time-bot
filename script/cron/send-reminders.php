@@ -1,7 +1,7 @@
 <?php
 
 /**
- * cron that will send out reminders for followers to do pushups
+ * cron that will send out reminders for followers
  * logic will respect the settings for each follower
  * only so many reminders per follower will be sent out
  * and those reminders will happen on defined days and between hours
@@ -92,7 +92,7 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
         continue;
     }
 
-    // send reminder to do pushups
+    // send reminder
     $tweet = sprintf($messages['reminder'], $follower->screen_name, date('g:i a'));
     try {
         $result = $rest_client->post('statuses/update.json', [
@@ -101,10 +101,10 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
             ],
         ]);
     } catch (Exception $e) {
-        exit("ABORT - tried to tell {$follower->screen_name} to do pushups and got failure: {$e->getMessage()}.");
+        exit("ABORT - tried to remind {$follower->screen_name} and got failure: {$e->getMessage()}.");
     }
     if ($result->getStatusCode() != 200) {
-        exit("ABORT - tried to tell {$follower->screen_name} to do pushups and got failure code: {$result->getStatusCode()}.");
+        exit("ABORT - tried to remind {$follower->screen_name} and got failure code: {$result->getStatusCode()}.");
     }
 
     // then we insert into the record for our records
