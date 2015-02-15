@@ -158,7 +158,7 @@ while (!$stream->eof()) {
                     }
                 }
             }
-            $pdo->close();
+            $pdo->disconnect();
         }
     }
 }

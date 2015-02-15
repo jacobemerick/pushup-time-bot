@@ -9,7 +9,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "aura/sql": "dev-add-connection-close-method",
+        "aura/sql": "~2.4",
         "guzzlehttp/guzzle": "~4.0",
         "guzzlehttp/oauth-subscriber": "~0.1"
     },
@@ -17,12 +17,6 @@
         "psr-4" : {
             "Jacobemerick\\PushupTime\\": "src/"
         }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/jacobemerick/Aura.Sql"
-        }
-    ]
+    }
 }
 
