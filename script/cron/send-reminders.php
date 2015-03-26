@@ -37,7 +37,12 @@ try {
 
 // loop through result set and check to see if they are applicable for a reminder
 while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
-    $user_timezone = $converter($follower->time_zone);
+    if (!empty($follower->time_zone)) {
+        $user_timezone = $converter($follower->time_zone);
+    } else {
+        $user_timezone = $converter('Central Time (US & Canada)');
+    }
+
     $system_time = new DateTime('now');
     $user_time = new DateTime('now', $user_timezone);
 
@@ -81,8 +86,9 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
     }
 
     // test to see if a notification has been sent during this 'chunk'
-    $start_time = $user_time->setTime(reset($allowed_hours), 0)->getTimestamp();
-    $end_time = $user_time->setTime(end($allowed_hours), 59, 59)->getTimestamp();
+    $test_time = (clone) $user_time;
+    $start_time = $test_time->setTime(reset($allowed_hours), 0)->getTimestamp();
+    $end_time = $test_time->setTime(end($allowed_hours), 59, 59)->getTimestamp();
     $chunked_timespan = ($end_time - $start_time) / $follower->per_day;
     $weight = (time() - $start_time) / $chunked_timespan;
     $expected_notifications = ceil($weight);
