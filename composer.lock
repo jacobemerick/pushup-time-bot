@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6ae2d1ef2cf0367f6d6bde64183cb84b",
+    "hash": "70ba8bd20e886c16bac4d654b9570acb",
     "packages": [
         {
             "name": "aura/sql",
-            "version": "2.4.0",
+            "version": "2.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/auraphp/Aura.Sql.git",
-                "reference": "a69dc499541c006b18f0c63f6bc0b9744db57c97"
+                "reference": "0bdfe1b873f3e511a4788bd1fa54fa486d8a3a8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/auraphp/Aura.Sql/zipball/a69dc499541c006b18f0c63f6bc0b9744db57c97",
-                "reference": "a69dc499541c006b18f0c63f6bc0b9744db57c97",
+                "url": "https://api.github.com/repos/auraphp/Aura.Sql/zipball/0bdfe1b873f3e511a4788bd1fa54fa486d8a3a8e",
+                "reference": "0bdfe1b873f3e511a4788bd1fa54fa486d8a3a8e",
                 "shasum": ""
             },
             "require": {
@@ -57,7 +57,7 @@
                 "sqlserver",
                 "sqlsrv"
             ],
-            "time": "2015-02-09 23:08:30"
+            "time": "2015-03-16 14:51:58"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -227,6 +227,43 @@
                 "stream"
             ],
             "time": "2014-08-17 21:15:53"
+        },
+        {
+            "name": "jacobemerick/timezone-converter",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jacobemerick/timezone-converter.git",
+                "reference": "85d25df5c3d23b46d6ccb36a61e913ce30e682e6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jacobemerick/timezone-converter/zipball/85d25df5c3d23b46d6ccb36a61e913ce30e682e6",
+                "reference": "85d25df5c3d23b46d6ccb36a61e913ce30e682e6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jacobemerick\\TimezoneConverter\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jacob Emerick"
+                }
+            ],
+            "keywords": [
+                "timezones"
+            ],
+            "time": "2015-03-19 00:32:53"
         }
     ],
     "packages-dev": [],

@@ -60,3 +60,6 @@ $streaming_client = new Client([
 ]);
 $streaming_client->getEmitter()->attach($oauth);
 
+use Jacobemerick\TimezoneConverter\Converter;
+$converter = new Converter(Converter::RAILS_FORMAT);
+

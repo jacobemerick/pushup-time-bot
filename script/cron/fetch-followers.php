@@ -93,7 +93,7 @@ if (count($new_followers) > 0) {
             'follower_count'       => $follower['followers_count'],
             'friend_count'         => $follower['friends_count'],
             'status_count'         => $follower['statuses_count'],
-            'account_create_date'  => date('Y-m-d H:i:s', strtotime($follower['created_at'])),
+            'account_create_date'  => (new DateTime($follower['created_at']))->format('c'),
             'is_following'         => 1,
         ];
         try {

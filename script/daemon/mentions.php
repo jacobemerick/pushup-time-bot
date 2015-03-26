@@ -73,12 +73,11 @@ while (!$stream->eof()) {
                         `mention`
                         (`tweet_id`, `text`, `follower_id`, `create_date`)
                     VALUES
-                        (:tweet_id, :text, :follower_id, :create_date)';
+                        (:tweet_id, :text, :follower_id, NOW())';
                 $parameters = [
                     'tweet_id'     => $message['id_str'],
                     'text'         => $message['text'],
                     'follower_id'  => $follower['id'],
-                    'create_date'  => date('Y-m-d H:i:s'),
                 ];
                 try {
                     $pdo->perform($query, $parameters);
@@ -115,13 +114,12 @@ while (!$stream->eof()) {
                             `performance`
                             (`follower_id`, `reminder_id`, `mention_id`, `amount`, `create_date`)
                         VALUES
-                            (:follower_id, :reminder_id, :mention_id, :amount, :create_date)';
+                            (:follower_id, :reminder_id, :mention_id, :amount, NOW())';
                     $parameters = [
                         'follower_id'  => $follower['id'],
                         'reminder_id'  => $reminder,
                         'mention_id'   => $mention,
                         'amount'       => $match[1],
-                        'create_date'  => date('Y-m-d H:i:s'),
                     ];
                     try {
                         $pdo->perform($query, $parameters);
