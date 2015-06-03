@@ -63,6 +63,10 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
     // sanity check to make sure we haven't already exceeded number of reminders per day
     $user_offset = ($system_time->getOffset() - $user_time->getOffset());
     $user_offset = DateInterval::createFromDateString("{$user_offset} seconds");
+
+    $start_time = clone $system_time;
+    $end_time = clone $system_time;
+
     $query = '
         SELECT
             COUNT(1) AS count
@@ -73,9 +77,10 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
             reminder.create_date BETWEEN :start_date AND :end_date';
     $parameters = [
         'follower'    => $follower->id,
-        'start_date'  => $system_time->setTime(0, 0)->add($user_offset)->format('c'),
-        'end_date'    => $system_time->setTime(23, 59, 59)->add($user_offset)->format('c'),
+        'start_date'  => $start_time->setTime(0, 0)->add($user_offset)->format('c'),
+        'end_date'    => $end_time->setTime(23, 59, 59)->add($user_offset)->format('c'),
     ];
+
     try {
         $count = $pdo->fetchValue($query, $parameters);
     } catch (PDOException $e) {
@@ -86,9 +91,11 @@ while (($follower = $statement->fetch(PDO::FETCH_OBJ)) != false) {
     }
 
     // test to see if a notification has been sent during this 'chunk'
-    $test_time = (clone) $user_time;
-    $start_time = $test_time->setTime(reset($allowed_hours), 0)->getTimestamp();
-    $end_time = $test_time->setTime(end($allowed_hours), 59, 59)->getTimestamp();
+    $start_time = clone $user_time;
+    $end_time = clone $user_time;
+
+    $start_time = $start_time->setTime(reset($allowed_hours), 0)->getTimestamp();
+    $end_time = $end_time->setTime(end($allowed_hours), 59, 59)->getTimestamp();
     $chunked_timespan = ($end_time - $start_time) / $follower->per_day;
     $weight = (time() - $start_time) / $chunked_timespan;
     $expected_notifications = ceil($weight);
