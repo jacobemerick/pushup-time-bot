@@ -3,22 +3,22 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$handle = @fopen('config.json', 'r');
+$handle = @fopen(__DIR__ . '/config.json', 'r');
 if ($handle == false) {
     exit('No configuration found.');
 }
-$config = fread($handle, filesize('config.json'));
+$config = fread($handle, filesize(__DIR__ . '/config.json'));
 fclose($handle);
 $config = @json_decode($config, true);
 if (json_last_error() !== JSON_ERROR_NONE) {
     exit('Could not read configuration.');
 }
 
-$handle = @fopen('messages.json', 'r');
+$handle = @fopen(__DIR__ . '/messages.json', 'r');
 if ($handle == false) {
     exit('No messages file found.');
 }
-$messages = fread($handle, filesize('messages.json'));
+$messages = fread($handle, filesize(__DIR__ . '/messages.json'));
 fclose($handle);
 $messages = @json_decode($messages, true);
 if (json_last_error() !== JSON_ERROR_NONE) {
